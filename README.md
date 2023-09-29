@@ -1,9 +1,9 @@
 # AWS Terraform Module Template
 
-[![checkov](https://github.com/aws-sample/aws-terraform-template/actions/workflows/checkov.yml/badge.svg)](https://github.com/aws-sample/aws-terraform-template/actions/workflows/checkov.yml)
-[![tflint](https://github.com/aws-sample/aws-terraform-template/actions/workflows/tflint.yml/badge.svg)](https://github.com/aws-sample/aws-terraform-template/actions/workflows/tflint.yml)
-[![terraform-docs](https://github.com/aws-sample/aws-terraform-template/actions/workflows/terraform-docs.yml/badge.svg)](https://github.com/aws-sample/aws-terraform-template/actions/workflows/terraform-docs.yml)
-[![Terratest PR](https://github.com/aws-sample/aws-terraform-template/actions/workflows/terratest-pr.yml/badge.svg)](https://github.com/aws-sample/aws-terraform-template/actions/workflows/terratest-pr.yml)
+[![Checkov](https://github.com/aws-samples/aws-terraform-template/actions/workflows/checkov.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/checkov.yml)
+[![TFLint](https://github.com/aws-samples/aws-terraform-template/actions/workflows/tflint.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/tflint.yml)
+[![terraform-docs](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terraform-docs.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terraform-docs.yml)
+[![Terratest PR](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terratest-pr.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terratest-pr.yml)
 
 This repository provides the template to use for all Terraform Modules.
 
