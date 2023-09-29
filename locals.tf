@@ -4,6 +4,6 @@ locals {
   tags = {
     name        = local.name
     environment = var.environment
-    GitRepo     = "https://github.com/aws-sample/aws-terraform-template"
+    GitRepo     = "https://github.com/aws-samples/aws-terraform-template"
   }
 }
