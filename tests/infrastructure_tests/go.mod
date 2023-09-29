@@ -1,6 +1,6 @@
 module github.com/aws-samples/terraform-template
 
-go 1.21.1
+go 1.21
 
 require (
 	github.com/gruntwork-io/terratest v0.44.0
