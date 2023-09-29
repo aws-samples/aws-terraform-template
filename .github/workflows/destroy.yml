@@ -1,0 +1,35 @@
+name: Destroy
+
+permissions:
+  contents: read # This is required for actions/checkout
+  pull-requests: write # This is required to add comments to Pull Requests
+  deployments: write # This is required to deactivate deployments
+
+on:
+  workflow_dispatch:
+
+jobs:
+  destroy:
+    name: Progressive Destroy
+    uses: https://github.com/aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@main
+    strategy:
+      max-parallel: 1
+      fail-fast: true
+      matrix:
+        include:
+          - environment: DEV-US-EAST-2
+            region: us-east-2
+          - environment: TST-US-EAST-2
+            region: us-east-2
+          - environment: PRD-US-EAST-2
+            region: us-east-2
+    with:
+      deploy: false
+      tf-version: ${{ vars.TF_VERSION }}
+      tf-organization: ${{ vars.TF_ORGANIZATION }}
+      tf-hostname: ${{ vars.TF_HOSTNAME }}
+      tf-workspace: ${{ vars.APP_NAME }}-${{ matrix.environment }}
+      aws-region: ${{ matrix.region }}
+      environment: ${{ matrix.environment }}
+    secrets:
+      tf-token: ${{ secrets.TF_TOKEN }}

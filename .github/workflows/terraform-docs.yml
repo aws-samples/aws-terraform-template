@@ -1,0 +1,22 @@
+name: terraform-docs
+
+permissions:
+  contents: write # This is required for updating the README.md files
+
+on:
+  pull_request:
+
+jobs:
+  generate-docs:
+    name: terraform-docs README generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Render terraform docs and push changes
+        uses: terraform-docs/gh-actions@v1.0.0
+        with:
+          config-file: .terraform-docs.yaml
+          git-push: "true"

@@ -1,0 +1,50 @@
+name: Terratest PR
+
+permissions:
+  contents: read # This is required for actions/checkout
+  deployments: write # This is required to deactivate deployments
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+
+concurrency:
+  group: terratest
+  cancel-in-progress: false
+
+jobs:
+  test-deploy:
+    name: Test Deployment
+    runs-on: ubuntu-latest
+    if: ${{ ! github.event.pull_request.draft }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./tests/infrastructure_tests
+    environment:
+      name: PR-${{ github.event.number }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Terratest Run
+        run: go test -timeout 30m -v
+        env:
+          AWS_REGION: "us-east-2"
+          TF_CLOUD_ORGANIZATION: ${{ vars.TF_ORGANIZATION }}
+          TF_CLOUD_HOSTNAME: ${{ vars.TF_HOSTNAME }}
+          TF_WORKSPACE: ${{ vars.APP_NAME }}-terratest
+          TF_TOKEN: ${{ secrets.TF_TOKEN }}
+  deactivate-deployment:
+    needs: [test-deploy]
+    name: Deactivate deployment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: strumwolf/delete-deployment-environment@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: pr-${{ github.event.number }}
+          onlyDeactivateDeployments: true

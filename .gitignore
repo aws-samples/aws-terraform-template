@@ -1,0 +1,55 @@
+#################################################################
+# Default .gitignore content for all Terraform Modules
+#################################################################
+
+.DS_Store
+
+# Local .terraform directories
+**/.terraform/*
+
+# Terraform lockfile
+.terraform.lock.hcl
+
+# .tfstate files
+**/*.tfstate
+**/*.tfstate.*
+
+# Crash log files
+crash.log
+
+# Exclude all auto.tfvars files, which are likely to contain sensitive data, such as
+# password, private keys, and other secrets. These should not be part of version
+# control as they are data points which should only be used for testing changes locally.
+*.auto.tfvars
+
+# Ignore override files as they are usually used to override resources locally and so
+# are not checked in
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
+*tfplan*
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Checkov
+checkov-output
+results.sarif
+
+# Local test files
+temp.sh
+
+# ################################################################
+# For Terraform Modules containing Python files
+# ################################################################
+## Uncomment the following lines for enabling Python formating
+# # Python
+# builds/
+# *.egg-info/
+# __pycache__/
+# .tox
+# .coverage

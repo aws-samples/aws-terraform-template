@@ -1,0 +1,21 @@
+name: Terratest Cleanup
+
+permissions:
+  contents: read # This is required for actions/checkout
+  deployments: write # This is required to delete deployments
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  remove-deployment:
+    name: Remove terratest deployment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: strumwolf/delete-deployment-environment@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: pr-${{ github.event.number }}
+          onlyRemoveDeployments: true
