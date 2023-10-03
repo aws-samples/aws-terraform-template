@@ -1,6 +1,7 @@
 name: Deploy
 
 permissions:
+  id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
   pull-requests: write # This is required to add comments to Pull Requests
   deployments: write # This is required to deactivate deployments
@@ -27,11 +28,11 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - environment: DEV-US-EAST-2
-            region: us-east-2
-          - environment: TST-US-EAST-2
-            region: us-east-2
-          - environment: PRD-US-EAST-2
+          - environment: dev
+            region: us-east-1
+          - environment: test
+            region: us-west-2
+          - environment: prod
             region: us-east-2
     with:
       deploy: true
