@@ -12,7 +12,7 @@ on:
 jobs:
   destroy:
     name: Progressive Destroy
-    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@feature/init-repo
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@v1
     strategy:
       max-parallel: 1
       fail-fast: true
@@ -32,5 +32,6 @@ jobs:
       tf-workspace: ${{ vars.APP_NAME }}-${{ matrix.environment }}
       aws-region: ${{ matrix.region }}
       environment: ${{ matrix.environment }}
+      ref: v1
     secrets:
       tf-token: ${{ secrets.TF_TOKEN }}
