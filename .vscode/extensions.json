@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "streetsidesoftware.code-spell-checker",
+    "davidanson.vscode-markdownlint",
+    "hashicorp.terraform",
+    "amazonwebservices.aws-toolkit-vscode",
+    "donjayamanne.githistory",
+    "esbenp.prettier-vscode",
+    "vscode-icons-team.vscode-icons",
+    "editorconfig.editorconfig",
+    "golang.go",
+    "github.vscode-github-actions"
+  ]
+}

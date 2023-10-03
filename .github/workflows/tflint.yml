@@ -1,0 +1,24 @@
+name: TFLint
+
+permissions:
+  contents: read # This is required for actions/checkout
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  lint:
+    name: TFLint Inspection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v3
+      - name: Show version
+        run: tflint --version
+      - name: Init TFLint
+        run: tflint --init
+      - name: Run TFLint
+        run: tflint
