@@ -18,11 +18,11 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - environment: DEV-US-EAST-2
-            region: us-east-2
-          - environment: TST-US-EAST-2
-            region: us-east-2
-          - environment: PRD-US-EAST-2
+          - environment: dev
+            region: us-east-1
+          - environment: test
+            region: us-west-2
+          - environment: prod
             region: us-east-2
     with:
       deploy: false
