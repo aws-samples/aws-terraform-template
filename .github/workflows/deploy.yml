@@ -19,13 +19,10 @@ on:
       - "**.tf*"
       - ".github/workflows/deploy.yml"
 
-env:
-  REUSABLE_WORKFLOW_REPO_REF: feature/init-repo
-
 jobs:
   deploy:
     name: Progressive Deployment
-    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@${REUSABLE_WORKFLOW_REPO_REF}
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@feature/init-repo
     strategy:
       max-parallel: 1
       fail-fast: true
@@ -45,6 +42,6 @@ jobs:
       tf-workspace: ${{ vars.APP_NAME }}-${{ matrix.environment }}
       aws-region: ${{ matrix.region }}
       environment: ${{ matrix.environment }}
-      ref: ${REUSABLE_WORKFLOW_REPO_REF}
+      ref: feature/init-repo
     secrets:
       tf-token: ${{ secrets.TF_TOKEN }}
