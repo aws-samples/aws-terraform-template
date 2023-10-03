@@ -21,7 +21,7 @@ on:
 jobs:
   deploy:
     name: Progressive Deployment
-    uses: https://github.com/aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@main
+    uses: https://github.com/aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@v1.0.0
     strategy:
       max-parallel: 1
       fail-fast: true
