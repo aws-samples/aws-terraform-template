@@ -2,8 +2,6 @@ module github.com/aws-samples/terraform-template
 
 go 1.21.3
 
-toolchain go1.21.3
-
 require (
 	github.com/gruntwork-io/terratest v0.44.0
 	github.com/stretchr/testify v1.8.4
