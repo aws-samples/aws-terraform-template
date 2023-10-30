@@ -1,6 +1,7 @@
 module github.com/aws-samples/terraform-template
 
-go 1.21
+go 1.21.3
+
 toolchain go1.21.3
 
 require (
