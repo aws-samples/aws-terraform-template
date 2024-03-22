@@ -37,7 +37,7 @@ jobs:
           TF_CLOUD_ORGANIZATION: ${{ vars.TF_ORGANIZATION }}
           TF_CLOUD_HOSTNAME: ${{ vars.TF_HOSTNAME }}
           TF_WORKSPACE: ${{ vars.APP_NAME }}-terraform-test
-          TF_TOKEN: ${{ secrets.TF_TOKEN }}
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN }}
       - name: Terraform test
         run: terraform test
   deactivate-deployment:
