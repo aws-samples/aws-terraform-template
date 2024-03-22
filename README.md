@@ -3,10 +3,9 @@
 [![Checkov](https://github.com/aws-samples/aws-terraform-template/actions/workflows/checkov.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/checkov.yml)
 [![TFLint](https://github.com/aws-samples/aws-terraform-template/actions/workflows/tflint.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/tflint.yml)
 [![terraform-docs](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terraform-docs.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terraform-docs.yml)
-[![Terratest PR](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terratest-pr.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terratest-pr.yml)
+[![Terraform test PR](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terraform-test-pr.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terraform-test-pr.yml)
 
 This repository provides the template to use for all Terraform Modules.
-
 <!-- TOC -->
 
 - [AWS Terraform Module Template](#aws-terraform-module-template)
@@ -41,7 +40,6 @@ This repository provides the template to use for all Terraform Modules.
 - [ ] Update the [Deploy workflow](./.github/workflows/deploy.yml) with your environment, regions, and workflow triggers.
 - [ ] (Optional) Update the [Destroy workflow](./.github/workflows/destroy.yml).
 - [ ] (Reusable module) Update the content of the `locals.tf` file to what is needed by the reusable module. Usually, `tags` are not created by reusable modules, but rather by modules that call the reusable module.
-- [ ] (Reusable module) Move the `providers.tf` file to the [test](./test/) folder and rename it `providers.tf.test`. Also remove the `default_tags` block from that file.
 - [ ] (Reusable module) Delete the [envs](./envs/) folder.
 - [ ] (Reusable module) Delete the [terraform.tfvars](./terraform.tfvars) file.
 - [ ] (Reusable module) Create an `examples` folder at the root of the repository where to put an example module calling the reusable module. Use a [Git URL](https://developer.hashicorp.com/terraform/language/modules/sources#generic-git-repository) selecting the latest [revision](https://developer.hashicorp.com/terraform/language/modules/sources#selecting-a-revision) to source the reusable module.

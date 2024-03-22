@@ -11,7 +11,7 @@ Consult the [CONTRIBUTING](../blob/main/CONTRIBUTING.md#contributing-via-pull-re
 
 ### Checklist
 
-- [ ] Yes, I have executed [tests](../blob/main/CONTRIBUTING.md#execute-tests-with-terratest-manually) successfully.
+- [ ] Yes, I have executed [tests](../blob/main/CONTRIBUTING.md#execute-tests-manually) successfully.
 - [ ] Yes, I have updated the documentation for this change.
 - [ ] Yes, [pre-commit hooks](../blob/main/CONTRIBUTING.md#execute-pre-commit-hooks-manually-on-all-files) have been executed successfully.
 

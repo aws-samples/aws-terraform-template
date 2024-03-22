@@ -8,7 +8,6 @@
     "esbenp.prettier-vscode",
     "vscode-icons-team.vscode-icons",
     "editorconfig.editorconfig",
-    "golang.go",
     "github.vscode-github-actions"
   ]
 }

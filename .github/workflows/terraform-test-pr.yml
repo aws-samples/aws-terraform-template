@@ -1,4 +1,4 @@
-name: Terratest PR
+name: Terraform test PR
 
 permissions:
   contents: read # This is required for actions/checkout
@@ -13,7 +13,7 @@ on:
       - ready_for_review
 
 concurrency:
-  group: terratest
+  group: terraform-test
   cancel-in-progress: false
 
 jobs:
@@ -24,29 +24,28 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ./tests/infrastructure_tests
     environment:
       name: PR-${{ github.event.number }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
-        with:
-          go-version: ">=1.21.0"
-      - name: Terratest Run
-        run: go test -timeout 30m -v
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      - name: Terraform Init
+        run: terraform init
         env:
-          AWS_REGION: "us-east-2"
           TF_CLOUD_ORGANIZATION: ${{ vars.TF_ORGANIZATION }}
           TF_CLOUD_HOSTNAME: ${{ vars.TF_HOSTNAME }}
-          TF_WORKSPACE: ${{ vars.APP_NAME }}-terratest
-          TF_TOKEN: ${{ secrets.TF_TOKEN }}
+          TF_WORKSPACE: ${{ vars.APP_NAME }}-terraform-test
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN }}
+      - name: Terraform test
+        run: terraform test
   deactivate-deployment:
     needs: [test-deploy]
     name: Deactivate deployment
     runs-on: ubuntu-latest
     steps:
-      - uses: strumwolf/delete-deployment-environment@v2
+      - uses: strumwolf/delete-deployment-environment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: pr-${{ github.event.number }}

@@ -1,4 +1,4 @@
-name: Terratest Cleanup
+name: Terraform test Cleanup
 
 permissions:
   contents: read # This is required for actions/checkout
@@ -11,10 +11,10 @@ on:
 
 jobs:
   remove-deployment:
-    name: Remove terratest deployment
+    name: Remove test deployment
     runs-on: ubuntu-latest
     steps:
-      - uses: strumwolf/delete-deployment-environment@v2
+      - uses: strumwolf/delete-deployment-environment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: pr-${{ github.event.number }}

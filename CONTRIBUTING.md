@@ -14,9 +14,11 @@ information to effectively respond to your bug report or contribution.
     - [Recommended](#recommended)
   - [Local Development Setup](#local-development-setup)
     - [Install Visual Studio Code recommended extensions](#install-visual-studio-code-recommended-extensions)
+    - [Install latest terraform version](#install-latest-terraform-version)
     - [Install pre-commit hooks](#install-pre-commit-hooks)
     - [Execute pre-commit hooks manually on all files](#execute-pre-commit-hooks-manually-on-all-files)
     - [Update pre-commit hooks](#update-pre-commit-hooks)
+    - [Execute tests manually](#execute-tests-manually)
   - [Reporting Bugs/Feature Requests](#reporting-bugsfeature-requests)
   - [Contributing via Pull Requests](#contributing-via-pull-requests)
   - [Finding contributions to work on](#finding-contributions-to-work-on)
@@ -38,7 +40,6 @@ The following tools need to be installed on your local machine:
 - [tflint](https://github.com/terraform-linters/tflint)
 - [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 - [checkov](https://github.com/bridgecrewio/checkov)
-- [Go](https://go.dev/doc/install)
 
 ### Recommended
 
@@ -88,20 +89,10 @@ pre-commit run terraform_docs --all-files
 pre-commit autoupdate
 ```
 
-### Execute tests with terratest manually
+### Execute tests manually
 
 ```shell
-export TF_CLOUD_ORGANIZATION='my-org'
-export TF_WORKSPACE='my-terratest-workspace'
-export TF_TOKEN='my-token'
-
-cd tests/infrastructure_tests
-
-go mod init github.com/aws-samples/terraform-template
-
-go mod tidy
-
-go test -timeout 30m -v
+terraform test
 ```
 
 ## Reporting Bugs/Feature Requests
@@ -139,12 +130,6 @@ GitHub provides additional document on [forking a repository](https://help.githu
 ## Finding contributions to work on
 
 Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels (enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any 'help wanted' issues is a great place to start.
-
-## Code of Conduct
-
-This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct).
-For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact
-[opensource-codeofconduct@amazon.com](mailto:opensource-codeofconduct@amazon.com) with any additional questions or comments.
 
 ## Security issue notifications
 
