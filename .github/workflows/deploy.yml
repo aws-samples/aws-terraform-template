@@ -42,6 +42,6 @@ jobs:
       tf-workspace: ${{ vars.APP_NAME }}-${{ matrix.environment }}
       aws-region: ${{ matrix.region }}
       environment: ${{ matrix.environment }}
-      ref: v1.1.0
+      ref: v1.2.0
     secrets:
       tf-token: ${{ secrets.TF_TOKEN }}
