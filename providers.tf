@@ -10,12 +10,11 @@ provider "aws" {
 # Option 1: S3 backend (default)
 terraform {
   backend "s3" {
-    bucket  = "my-terraform-state-bucket"
-    key     = "path/to/my/terraform.tfstate"
-    region  = "us-east-1"
-    encrypt = true
-    # Enable state locking with a local lock file (useful for CI/CD environments)
-    use_lock_file = true
+    bucket       = "my-terraform-state-bucket"
+    key          = "path/to/my/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
   }
 }
 

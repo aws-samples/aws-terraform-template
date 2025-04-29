@@ -62,8 +62,7 @@ terraform {
     key            = "path/to/my/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
-    # Enable state locking with a local lock file (useful for CI/CD environments)
-    use_lock_file = true
+    use_lockfile   = true
   }
 }
 ```

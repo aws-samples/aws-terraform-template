@@ -20,29 +20,54 @@ on:
       - ".github/workflows/deploy.yml"
 
 jobs:
-  deploy:
-    name: Progressive Deployment
+  deploy-dev:
+    name: Dev Deployment
     uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@v1.3.0
-    strategy:
-      max-parallel: 1
-      fail-fast: true
-      matrix:
-        include:
-          - environment: dev
-            region: us-east-1
-          - environment: test
-            region: us-west-2
-          - environment: prod
-            region: us-east-2
     with:
       deploy: true
       tf-version: ${{ vars.TF_VERSION }}
-      aws-region: ${{ matrix.region }}
-      environment: ${{ matrix.environment }}
+      aws-region: us-east-1
+      environment: "dev"
       ref: v1.3.0
       local-execution-mode: true
       enable-github-modules: true
     secrets:
-      terraform-execution-iam-plan-role-arn: ${{ secrets.TF_PLAN_ROLE_ARN }}
-      terraform-execution-iam-apply-role-arn: ${{ secrets.TF_APPLY_ROLE_ARN }}
+      terraform-execution-iam-plan-role-arn: ${{ secrets.DEV_AWS_PLAN_ROLE_ARN }}
+      terraform-execution-iam-apply-role-arn: ${{ secrets.DEV_AWS_APPLY_ROLE_ARN }}
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-test:
+    name: Test Deployment
+    needs: [deploy-dev]
+    if: github.ref == 'refs/heads/main'
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@v1.3.0
+    with:
+      deploy: true
+      tf-version: ${{ vars.TF_VERSION }}
+      aws-region: us-west-2
+      environment: "test"
+      ref: v1.3.0
+      local-execution-mode: true
+      enable-github-modules: true
+    secrets:
+      terraform-execution-iam-plan-role-arn: ${{ secrets.TEST_AWS_PLAN_ROLE_ARN }}
+      terraform-execution-iam-apply-role-arn: ${{ secrets.TEST_AWS_APPLY_ROLE_ARN }}
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-prod:
+    name: Prod Deployment
+    needs: [deploy-test]
+    if: github.ref == 'refs/heads/main'
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@v1.3.0
+    with:
+      deploy: true
+      tf-version: ${{ vars.TF_VERSION }}
+      aws-region: us-east-2
+      environment: "prod"
+      ref: v1.3.0
+      local-execution-mode: true
+      enable-github-modules: true
+    secrets:
+      terraform-execution-iam-plan-role-arn: ${{ secrets.PROD_AWS_PLAN_ROLE_ARN }}
+      terraform-execution-iam-apply-role-arn: ${{ secrets.PROD_AWS_APPLY_ROLE_ARN }}
       github-token: ${{ secrets.GITHUB_TOKEN }}
