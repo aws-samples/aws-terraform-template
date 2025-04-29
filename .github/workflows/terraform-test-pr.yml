@@ -1,6 +1,7 @@
 name: Terraform test PR
 
 permissions:
+  id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
   deployments: write # This is required to deactivate deployments
 
@@ -29,15 +30,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.TF_PLAN_ROLE_ARN }}
+          role-session-name: terraform-test-role
+          aws-region: us-east-1
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
       - name: Terraform Init
         run: terraform init
-        env:
-          TF_CLOUD_ORGANIZATION: ${{ vars.TF_ORGANIZATION }}
-          TF_CLOUD_HOSTNAME: ${{ vars.TF_HOSTNAME }}
-          TF_WORKSPACE: ${{ vars.APP_NAME }}-terraform-test
-          TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN }}
       - name: Terraform test
         run: terraform test
   deactivate-deployment:

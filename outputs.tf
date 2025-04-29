@@ -1,5 +1,5 @@
 output "hello_world" {
-  description = "Test output used by Terrastest"
+  description = "Test output"
   value       = "Hello, ${upper(var.environment)} World!"
 }
 
