@@ -22,7 +22,7 @@ on:
 jobs:
   deploy:
     name: Progressive Deployment
-    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@v1.2.0
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@v1.3.0
     strategy:
       max-parallel: 1
       fail-fast: true
@@ -37,11 +37,12 @@ jobs:
     with:
       deploy: true
       tf-version: ${{ vars.TF_VERSION }}
-      tf-organization: ${{ vars.TF_ORGANIZATION }}
-      tf-hostname: ${{ vars.TF_HOSTNAME }}
-      tf-workspace: ${{ vars.APP_NAME }}-${{ matrix.environment }}
       aws-region: ${{ matrix.region }}
       environment: ${{ matrix.environment }}
-      ref: v1.2.0
+      ref: v1.3.0
+      local-execution-mode: true
+      enable-github-modules: true
     secrets:
-      tf-token: ${{ secrets.TF_TOKEN }}
+      terraform-execution-iam-plan-role-arn: ${{ secrets.TF_PLAN_ROLE_ARN }}
+      terraform-execution-iam-apply-role-arn: ${{ secrets.TF_APPLY_ROLE_ARN }}
+      github-token: ${{ secrets.GITHUB_TOKEN }}

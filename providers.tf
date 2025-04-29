@@ -6,6 +6,24 @@ provider "aws" {
   }
 }
 
+# Terraform backend configuration
+# Option 1: S3 backend (default)
 terraform {
-  cloud {}
+  backend "s3" {
+    bucket  = "my-terraform-state-bucket"
+    key     = "path/to/my/terraform.tfstate"
+    region  = "us-east-1"
+    encrypt = true
+    # Enable state locking with a local lock file (useful for CI/CD environments)
+    use_lock_file = true
+  }
 }
+
+# Option 2: Terraform Cloud/Enterprise (alternative)
+# Delete the backend "s3" block above and uncomment the cloud block below
+# to use Terraform Cloud/Enterprise
+# terraform {
+#   cloud {}
+# }
+
+# Note: You can only have one backend configuration active at a time.
