@@ -1,0 +1,5 @@
+# State bucket for the test environment. Create it in the test account first.
+bucket     = "amzn-s3-demo-bucket-test"
+key        = "aws-terraform-template/terraform.tfstate"
+region     = "us-west-2"
+kms_key_id = "alias/terraform-state"

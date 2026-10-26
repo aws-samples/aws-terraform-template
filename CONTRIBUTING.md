@@ -14,11 +14,12 @@ information to effectively respond to your bug report or contribution.
     - [Recommended](#recommended)
   - [Local Development Setup](#local-development-setup)
     - [Install Visual Studio Code recommended extensions](#install-visual-studio-code-recommended-extensions)
-    - [Install latest terraform version](#install-latest-terraform-version)
+    - [Install Terraform](#install-terraform)
     - [Install pre-commit hooks](#install-pre-commit-hooks)
     - [Execute pre-commit hooks manually on all files](#execute-pre-commit-hooks-manually-on-all-files)
     - [Update pre-commit hooks](#update-pre-commit-hooks)
     - [Execute tests manually](#execute-tests-manually)
+    - [Upgrade providers](#upgrade-providers)
   - [Reporting Bugs/Feature Requests](#reporting-bugsfeature-requests)
   - [Contributing via Pull Requests](#contributing-via-pull-requests)
   - [Finding contributions to work on](#finding-contributions-to-work-on)
@@ -36,7 +37,7 @@ The following tools need to be installed on your local machine:
 
 - [Visual Studio Code](https://code.visualstudio.com/)
 - [pre-commit](https://pre-commit.com/)
-- [tfenv](https://github.com/tfutils/tfenv)
+- [Terraform](https://developer.hashicorp.com/terraform/install) 1.11 or later. A version manager such as [tfenv](https://github.com/tfutils/tfenv) or [mise](https://mise.jdx.dev/) helps you match the `TF_VERSION` that the workflows use.
 - [tflint](https://github.com/terraform-linters/tflint)
 - [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 - [checkov](https://github.com/bridgecrewio/checkov)
@@ -55,11 +56,13 @@ Run these steps before making changes to the code. They will help automate the c
 
 Install Visual Studio Code [recommended extensions](https://code.visualstudio.com/docs/editor/extension-marketplace#_recommended-extensions) defined in [.vscode/extensions.json](.vscode/extensions.json) to improve you productivity and increase code quality.
 
-### Install latest terraform version
+### Install Terraform
+
+Install the version set in the repository's `TF_VERSION` variable. For example, with tfenv:
 
 ```shell
-tfenv install latest
-tfenv use latest
+tfenv install 1.17.0
+tfenv use 1.17.0
 ```
 
 ### Install pre-commit hooks
@@ -91,8 +94,20 @@ pre-commit autoupdate
 
 ### Execute tests manually
 
+The unit tests mock the AWS Provider, so they need no backend and no AWS credentials:
+
 ```shell
+terraform init -backend=false
 terraform test
+```
+
+### Upgrade providers
+
+To move to a newer provider version that the constraints in `versions.tf` allow, upgrade and record checksums for every platform that runs Terraform, then commit the lock file:
+
+```shell
+terraform init -backend=false -upgrade
+terraform providers lock -platform=linux_amd64 -platform=linux_arm64 -platform=darwin_amd64 -platform=darwin_arm64 -platform=windows_amd64
 ```
 
 ## Reporting Bugs/Feature Requests

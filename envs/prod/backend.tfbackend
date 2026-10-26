@@ -1,0 +1,5 @@
+# State bucket for the prod environment. Create it in the prod account first.
+bucket     = "amzn-s3-demo-bucket-prod"
+key        = "aws-terraform-template/terraform.tfstate"
+region     = "us-east-2"
+kms_key_id = "alias/terraform-state"

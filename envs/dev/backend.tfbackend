@@ -1,0 +1,5 @@
+# State bucket for the dev environment. Create it in the dev account first.
+bucket     = "amzn-s3-demo-bucket-dev"
+key        = "aws-terraform-template/terraform.tfstate"
+region     = "us-east-1"
+kms_key_id = "alias/terraform-state"

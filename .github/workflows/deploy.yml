@@ -1,73 +1,90 @@
 name: Deploy
 
-permissions:
-  id-token: write # This is required for requesting the JWT
-  contents: read # This is required for actions/checkout
-  pull-requests: write # This is required to add comments to Pull Requests
-  deployments: write # This is required to deactivate deployments
+permissions: {}
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
-      - "**.tf*"
+      - "**.tf"
+      - "**.tfvars"
+      - "**.tfbackend"
+      - ".terraform.lock.hcl"
       - ".github/workflows/deploy.yml"
   push:
     branches:
-      - "main"
+      - main
     paths:
-      - "**.tf*"
+      - "**.tf"
+      - "**.tfvars"
+      - "**.tfbackend"
+      - ".terraform.lock.hcl"
       - ".github/workflows/deploy.yml"
 
+# Pull requests plan dev and comment the plan. On main, each environment plans,
+# waits for its GitHub environment's approval, applies that reviewed plan, and
+# then the next environment starts.
 jobs:
   deploy-dev:
-    name: Dev Deployment
-    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@v1.3.0
+    name: Dev
+    # The reusable workflow's jobs request these permissions, so the calling
+    # job must grant all of them.
+    permissions:
+      contents: read # Required for actions/checkout
+      id-token: write # Required to request the GitHub OIDC token
+      pull-requests: write # Required to comment the plan on pull requests
+      deployments: write # Required to mark deployments inactive after a destroy
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@185fe37eb3dc1fb4bcfa6b67dffcbb3eea483a61 # feature/v2-saved-plan-s3-backend, replace with the v2.0.0 release
     with:
       deploy: true
       tf-version: ${{ vars.TF_VERSION }}
       aws-region: us-east-1
-      environment: "dev"
-      ref: v1.3.0
-      local-execution-mode: true
-      enable-github-modules: true
+      environment: dev
     secrets:
       terraform-execution-iam-plan-role-arn: ${{ secrets.DEV_AWS_PLAN_ROLE_ARN }}
       terraform-execution-iam-apply-role-arn: ${{ secrets.DEV_AWS_APPLY_ROLE_ARN }}
-      github-token: ${{ secrets.GITHUB_TOKEN }}
+      plan-encryption-key: ${{ secrets.PLAN_ENCRYPTION_KEY }}
 
   deploy-test:
-    name: Test Deployment
-    needs: [deploy-dev]
+    name: Test
+    # The reusable workflow's jobs request these permissions, so the calling
+    # job must grant all of them.
+    permissions:
+      contents: read # Required for actions/checkout
+      id-token: write # Required to request the GitHub OIDC token
+      pull-requests: write # Required to comment the plan on pull requests
+      deployments: write # Required to mark deployments inactive after a destroy
+    needs: deploy-dev
     if: github.ref == 'refs/heads/main'
-    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@v1.3.0
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@185fe37eb3dc1fb4bcfa6b67dffcbb3eea483a61 # feature/v2-saved-plan-s3-backend, replace with the v2.0.0 release
     with:
       deploy: true
       tf-version: ${{ vars.TF_VERSION }}
       aws-region: us-west-2
-      environment: "test"
-      ref: v1.3.0
-      local-execution-mode: true
-      enable-github-modules: true
+      environment: test
     secrets:
       terraform-execution-iam-plan-role-arn: ${{ secrets.TEST_AWS_PLAN_ROLE_ARN }}
       terraform-execution-iam-apply-role-arn: ${{ secrets.TEST_AWS_APPLY_ROLE_ARN }}
-      github-token: ${{ secrets.GITHUB_TOKEN }}
+      plan-encryption-key: ${{ secrets.PLAN_ENCRYPTION_KEY }}
 
   deploy-prod:
-    name: Prod Deployment
-    needs: [deploy-test]
+    name: Prod
+    # The reusable workflow's jobs request these permissions, so the calling
+    # job must grant all of them.
+    permissions:
+      contents: read # Required for actions/checkout
+      id-token: write # Required to request the GitHub OIDC token
+      pull-requests: write # Required to comment the plan on pull requests
+      deployments: write # Required to mark deployments inactive after a destroy
+    needs: deploy-test
     if: github.ref == 'refs/heads/main'
-    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@v1.3.0
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@185fe37eb3dc1fb4bcfa6b67dffcbb3eea483a61 # feature/v2-saved-plan-s3-backend, replace with the v2.0.0 release
     with:
       deploy: true
       tf-version: ${{ vars.TF_VERSION }}
       aws-region: us-east-2
-      environment: "prod"
-      ref: v1.3.0
-      local-execution-mode: true
-      enable-github-modules: true
+      environment: prod
     secrets:
       terraform-execution-iam-plan-role-arn: ${{ secrets.PROD_AWS_PLAN_ROLE_ARN }}
       terraform-execution-iam-apply-role-arn: ${{ secrets.PROD_AWS_APPLY_ROLE_ARN }}
-      github-token: ${{ secrets.GITHUB_TOKEN }}
+      plan-encryption-key: ${{ secrets.PLAN_ENCRYPTION_KEY }}

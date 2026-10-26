@@ -1,259 +1,163 @@
-# AWS Terraform Module Template
+# AWS Terraform Root Module Template
 
 [![Checkov](https://github.com/aws-samples/aws-terraform-template/actions/workflows/checkov.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/checkov.yml)
 [![TFLint](https://github.com/aws-samples/aws-terraform-template/actions/workflows/tflint.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/tflint.yml)
 [![terraform-docs](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terraform-docs.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terraform-docs.yml)
 [![Terraform test PR](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terraform-test-pr.yml/badge.svg)](https://github.com/aws-samples/aws-terraform-template/actions/workflows/terraform-test-pr.yml)
 
-This repository provides the template to use for all Terraform Modules.
-<!-- TOC -->
+A template repository for a Terraform root module that deploys to several AWS accounts through the [Terraform reusable workflow](https://github.com/aws-samples/aws-terraform-reusable-workflow). It follows [Best practices for using the Terraform AWS Provider](https://docs.aws.amazon.com/prescriptive-guidance/latest/terraform-aws-provider-best-practices/introduction.html) in AWS Prescriptive Guidance.
 
-- [AWS Terraform Module Template](#aws-terraform-module-template)
-  - [Repository configuration checklist](#repository-configuration-checklist)
-  - [Backend Configuration](#backend-configuration)
-    - [Option 1: Terraform Cloud/Enterprise (Default)](#option-1-terraform-cloudenterprise-default)
-    - [Option 2: S3 Backend](#option-2-s3-backend)
-  - [Module Sourcing](#module-sourcing)
-    - [GitHub Module Sourcing](#github-module-sourcing)
-    - [Terraform Registry Modules](#terraform-registry-modules)
-    - [Local Modules](#local-modules)
-  - [Requirements](#requirements)
-  - [Providers](#providers)
-  - [Modules](#modules)
-  - [Resources](#resources)
-  - [Inputs](#inputs)
-  - [Outputs](#outputs)
-  - [Security](#security)
-  - [License](#license)
+The template includes:
 
-<!-- /TOC -->
+- An S3 backend with native state locking, completed for each environment by `envs/<environment>/backend.tfbackend`.
+- Version constraints with an upper bound for the AWS Provider, and a committed dependency lock file with checksums for Linux, macOS, and Windows.
+- `allowed_account_ids` on the AWS Provider, so that a run with credentials for the wrong account stops before it changes anything.
+- Unit tests that mock the AWS Provider and need no AWS credentials.
+- Deploy and destroy workflows that plan in each environment, wait for the environment's approval, and apply the reviewed plan.
+- TFLint, Checkov, terraform-docs, and pre-commit hooks.
 
 ## Repository configuration checklist
 
-> Perform the steps identified as **(Reusable module)** when using this template to create a repository that will contain a reusable module. Ignore these steps when creating a standard module.
+> Do the steps marked **(Reusable module)** only when you use this template for a reusable module instead of a root module.
 
-- [ ] Update the [CONTRIBUTING.md](./CONTRIBUTING.md) file to reflect the current repository
-- [ ] Update the [CODEOWNERS](./CODEOWNERS) file with the users or groups that should review pull requests
-- [ ] Install [Pre-Commit Hooks](./CONTRIBUTING.md#install-pre-commit-hooks)
-- [ ] Install [Visual Studio Code Recommended Extensions](./CONTRIBUTING.md#install-visual-studio-code-recommended-extensions)
-- [ ] Update the [description](./README.md#terraform-module-template) in this [README.md](./README.md) file to reflect the solution the module is implementing
-- [ ] Create the repository secrets, variables and environments as documented in the [Terraform Reusable Workflow Prerequisites](https://github.com/aws-samples/aws-terraform-reusable-workflow#prerequisites).
-- [ ] Update the [Deploy workflow](./.github/workflows/deploy.yml) with your environment, regions, and workflow triggers.
-- [ ] (Optional) Update the [Destroy workflow](./.github/workflows/destroy.yml).
-- [ ] (Reusable module) Update the content of the `locals.tf` file to what is needed by the reusable module. Usually, `tags` are not created by reusable modules, but rather by modules that call the reusable module.
-- [ ] (Reusable module) Delete the [envs](./envs/) folder.
-- [ ] (Reusable module) Delete the [terraform.tfvars](./terraform.tfvars) file.
-- [ ] (Reusable module) Create an `examples` folder at the root of the repository where to put an example module calling the reusable module. Use a [Git URL](https://developer.hashicorp.com/terraform/language/modules/sources#generic-git-repository) selecting the latest [revision](https://developer.hashicorp.com/terraform/language/modules/sources#selecting-a-revision) to source the reusable module.
-- [ ] Configure the S3 backend in providers.tf with your bucket name, key, and region
-- [ ] Delete this checklist and start coding!
+- [ ] Update [CONTRIBUTING.md](./CONTRIBUTING.md) for your repository.
+- [ ] Update [CODEOWNERS](./CODEOWNERS) with the users or teams that review pull requests.
+- [ ] Install the [pre-commit hooks](./CONTRIBUTING.md#install-pre-commit-hooks).
+- [ ] Replace the description at the top of this README with what your module deploys.
+- [ ] In each AWS account, create the state bucket, its AWS KMS key, the GitHub OIDC identity provider, and the plan and apply IAM roles. See [Option 1: S3 backend with GitHub OIDC](https://github.com/aws-samples/aws-terraform-reusable-workflow#option-1-s3-backend-with-github-oidc) in the reusable workflow README.
+- [ ] Create a GitHub environment for each environment (`dev`, `test`, `prod`). For `prod`, add required reviewers and a deployment branch rule that allows only `main`.
+- [ ] Create the repository variable `TF_VERSION` (for example, `1.17.0`) and the repository secrets `<ENV>_AWS_PLAN_ROLE_ARN`, `<ENV>_AWS_APPLY_ROLE_ARN`, and `PLAN_ENCRYPTION_KEY`.
+- [ ] In each `envs/<environment>/` folder, set your account ID in `terraform.tfvars` and your state bucket in `backend.tfbackend`.
+- [ ] In the [Deploy](./.github/workflows/deploy.yml) and [Destroy](./.github/workflows/destroy.yml) workflows, set your environments and Regions, and pin the reusable workflow to the full commit SHA of the release you use.
+- [ ] (Reusable module) Delete the `envs` folder, the root `terraform.tfvars` file, the `backend "s3"` block, the `provider "aws"` block, the Deploy and Destroy workflows, and `.terraform.lock.hcl`. Reusable modules don't configure providers or backends, and Terraform reads the lock file only from the root module.
+- [ ] (Reusable module) Change the AWS Provider constraint in `versions.tf` to a lower bound only, such as `>= 6.0`, so that callers can choose the version.
+- [ ] (Reusable module) Remove `locals.tf` and the `tags` variable if the module doesn't need them. The root module that calls a reusable module usually sets the tags.
+- [ ] (Reusable module) Add an `examples` folder with a root module that calls the reusable module.
+- [ ] Delete this checklist and start coding.
 
-## Backend Configuration
+## Backend configuration
 
-This template supports two backend configuration options for storing Terraform state:
+### S3 backend (default)
 
-### Option 1: S3 Backend (Default)
-
-The default configuration uses S3 for state management. The configuration is already set up in `providers.tf`:
+`providers.tf` declares a partial S3 backend with the settings that every environment shares:
 
 ```hcl
 terraform {
   backend "s3" {
-    bucket         = "my-terraform-state-bucket"
-    key            = "path/to/my/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    use_lockfile   = true
+    encrypt      = true
+    use_lockfile = true
   }
 }
 ```
 
-Update your GitHub Actions workflow to use the S3 backend:
+Each environment completes it with `envs/<environment>/backend.tfbackend`, so that its state stays in a bucket in its own account:
 
-```yaml
-with:
-  deploy: true
-  tf-version: ${{ vars.TF_VERSION }}
-  aws-region: ${{ matrix.region }}
-  environment: ${{ matrix.environment }}
-  local-execution-mode: true
-  ref: v1.3.0
+```hcl
+bucket     = "amzn-s3-demo-bucket-dev"
+key        = "aws-terraform-template/terraform.tfstate"
+region     = "us-east-1"
+kms_key_id = "alias/terraform-state"
 ```
 
-### Option 2: Terraform Cloud/Enterprise
+The reusable workflow passes this file to `terraform init`. For local runs, pass it yourself:
 
-Alternatively, you can use Terraform Cloud/Enterprise for state management. To use this option:
+```shell
+terraform init -backend-config=envs/dev/backend.tfbackend
+```
 
-1. Delete the `backend "s3"` block and uncomment the `cloud` block in `providers.tf`:
+To switch environments locally, run `terraform init -reconfigure` with the other environment's file.
+
+### HCP Terraform or Terraform Enterprise
+
+1. In `providers.tf`, replace the `backend "s3"` block with an empty `cloud` block, and delete the `backend.tfbackend` files:
+
    ```hcl
    terraform {
      cloud {}
    }
    ```
 
-2. Update your GitHub Actions workflow with Terraform Cloud/Enterprise parameters:
+2. Pass the organization, workspace, and token to the reusable workflow:
+
    ```yaml
    with:
      tf-organization: ${{ vars.TF_ORGANIZATION }}
-     tf-hostname: ${{ vars.TF_HOSTNAME }}
-     tf-workspace: ${{ vars.APP_NAME }}-${{ matrix.environment }}
+     tf-workspace: my-app-dev
    secrets:
      tf-token: ${{ secrets.TF_TOKEN }}
+     plan-encryption-key: ${{ secrets.PLAN_ENCRYPTION_KEY }}
    ```
 
-## Module Sourcing
+For execution modes, dynamic provider credentials, and Terraform Enterprise, see [Option 2](https://github.com/aws-samples/aws-terraform-reusable-workflow#option-2-hcp-terraform-or-terraform-enterprise) in the reusable workflow README.
 
-This template supports multiple methods for sourcing Terraform modules:
+## Deploy and destroy
 
-### GitHub Module Sourcing
+- **Deploy:** pull requests plan `dev` and post the plan as a comment. On `main`, each environment plans, waits for its GitHub environment's approval, and applies that saved plan. Then the next environment starts.
+- **Destroy:** run it manually. It destroys `prod`, then `test`, then `dev`, and each destroy plan waits for its environment's approval.
 
-To source modules from GitHub repositories securely:
+Each environment reads `envs/<environment>/terraform.tfvars`. The workflow also passes `region` and `environment` from its inputs. For sensitive values, use the reusable workflow's `secret-tfvars` secret with ephemeral variables. See [Sensitive variables](https://github.com/aws-samples/aws-terraform-reusable-workflow#sensitive-variables).
 
-#### Public Repository Sourcing
+## Tests
 
-For public repositories, always use commit hashes to prevent supply chain attacks:
+`tests/unit.tftest.hcl` mocks the AWS Provider with `mock_provider`, so the tests need no AWS credentials. They check the variable validation and the values that the module computes. Run them locally the same way as the Terraform test PR workflow:
 
-1. Public repository root module:
-   ```hcl
-   module "example" {
-     source = "github.com/organization/repository?ref=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0"
-
-     # Module inputs
-     example_input = "value"
-   }
-   ```
-
-2. Public repository submodule:
-   ```hcl
-   module "example" {
-     source = "github.com/organization/repository//path/to/module?ref=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0"
-
-     # Module inputs
-     example_input = "value"
-   }
-   ```
-
-#### Private Repository Sourcing
-
-For private repositories, you can use version tags as they're within your organization's control:
-
-1. Private repository root module:
-   ```hcl
-   module "example" {
-     source = "github.com/organization/private-repository?ref=v1.0.0"
-
-     # Module inputs
-     example_input = "value"
-   }
-   ```
-
-2. Private repository submodule:
-   ```hcl
-   module "example" {
-     source = "github.com/organization/private-repository//path/to/module?ref=v1.0.0"
-
-     # Module inputs
-     example_input = "value"
-   }
-   ```
-
-#### GitHub Actions Configuration
-
-Update your GitHub Actions workflow to enable GitHub module sourcing:
-
-```yaml
-with:
-  local-execution-mode: true
-  enable-github-modules: true
-secrets:
-  github-token: ${{ secrets.GITHUB_TOKEN }}
+```shell
+terraform init -backend=false
+terraform test
 ```
 
-### Terraform Registry Modules
+Integration tests create real resources, check them, and destroy them. Put them in `tests/integration`, configure the provider in them with `allowed_account_ids` set to a dedicated test account, and run them with credentials for that account:
 
-#### Public Registry Modules
-
-For public registry modules, it's recommended to use the GitHub source instead of the Terraform Registry for better security control:
-
-```hcl
-# RECOMMENDED: Source directly from GitHub with commit hash pinning
-module "vpc" {
-  source = "github.com/terraform-aws-modules/terraform-aws-vpc?ref=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0"
-
-  # Module inputs
-  name = "my-vpc"
-  cidr = "10.0.0.0/16"
-}
+```shell
+terraform test -test-directory=tests/integration
 ```
 
-```hcl
-# NOT RECOMMENDED: Using Terraform Registry for public modules
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "5.0.0"
+For more information, see [Best practices for testing](https://docs.aws.amazon.com/prescriptive-guidance/latest/terraform-aws-provider-best-practices/best-practices-for-testing.html) in the guide.
 
-  # Module inputs
-  name = "my-vpc"
-  cidr = "10.0.0.0/16"
-}
-```
+## Module sources
 
-Using GitHub source with commit hash pinning provides better protection against supply chain attacks compared to the Terraform Registry, as it ensures the exact code version is used and cannot be tampered with.
+Pin every module that you call, and review a new version before you upgrade to it.
 
-#### Private Registry Modules
+- **Public Terraform Registry:** set `source` to the module address and `version` to an exact version. This is the simplest option, and Dependabot can propose upgrades. The trade-off is that the publisher controls which code a version number points to.
 
-For private registry modules within your organization:
+  ```hcl
+  module "vpc" {
+    source  = "terraform-aws-modules/vpc/aws"
+    version = "6.7.3"
+  }
+  ```
 
-```hcl
-module "internal_vpc" {
-  source  = "app.terraform.io/my-organization/vpc/aws"
-  version = "1.0.0"
+- **Git repository pinned to a commit:** set `ref` to a full commit SHA, and record the release in a comment. The code that runs is always the code that you reviewed. The trade-off is that each upgrade means finding and reviewing a new SHA.
 
-  # Module inputs
-  name = "my-vpc"
-  cidr = "10.0.0.0/16"
-}
-```
+  ```hcl
+  module "vpc" {
+    source = "git::https://github.com/terraform-aws-modules/terraform-aws-vpc.git?ref=b3abd6df2ecf052451a361ed55b8f06f8742a795" # v6.7.3
+  }
+  ```
 
-### Security Best Practices
+- **Private registry:** for modules that your organization publishes in HCP Terraform or Terraform Enterprise, use the registry address and an exact version, such as `source = "app.terraform.io/my-organization/vpc/aws"`.
+- **Local path:** for modules in the same repository, use a relative path, such as `source = "./modules/network"`.
 
-1. **Public modules**: Always pin to specific commit hashes to prevent supply chain attacks
-2. **Private modules**: Version tags are acceptable as they're within your organization's control
-3. **Avoid using branch references** as they can change over time:
-   ```hcl
-   # NOT RECOMMENDED for production
-   module "example" {
-     source = "github.com/organization/repository?ref=main"
-   }
-   ```
-4. **Regularly audit and update** pinned versions to incorporate security patches
+Don't use a branch name as `ref`. The code behind a branch changes without review.
 
-### Local Modules
+### Private modules on GitHub
 
-To source modules from local paths:
-
-```hcl
-module "local_example" {
-  source = "./modules/example"
-
-  # Module inputs
-  example_input = "value"
-}
-```
+To download modules from private GitHub repositories in the workflows, set `enable-github-modules: true` and pass a token that can read those repositories as the `github-token` secret. The workflow's own `GITHUB_TOKEN` can read only this repository, so use a GitHub App installation token or a fine-grained personal access token with read-only `contents` access. For details, see [Private modules on GitHub](https://github.com/aws-samples/aws-terraform-reusable-workflow#private-modules-on-github).
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >=5.0.0 |
-| <a name="requirement_random"></a> [random](#requirement\_random) | >=3.0.0 |
+| ---- | ------- |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.11 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.0 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.7 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
-| <a name="provider_random"></a> [random](#provider\_random) | >=3.0.0 |
+| ---- | ------- |
+| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.7 |
 
 ## Modules
 
@@ -262,20 +166,22 @@ No modules.
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [random_pet.main](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/pet) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_environment"></a> [environment](#input\_environment) | The environment where to deploy the solution | `string` | n/a | yes |
-| <a name="input_region"></a> [region](#input\_region) | Region where to deploy the resources | `string` | n/a | yes |
+| ---- | ----------- | ---- | ------- | :------: |
+| <a name="input_allowed_account_ids"></a> [allowed\_account\_ids](#input\_allowed\_account\_ids) | AWS account IDs that this configuration can deploy to. The AWS Provider stops the run if the credentials belong to any other account. | `list(string)` | n/a | yes |
+| <a name="input_environment"></a> [environment](#input\_environment) | Name of the environment where the resources are deployed, such as dev or prod | `string` | n/a | yes |
+| <a name="input_region"></a> [region](#input\_region) | AWS Region where the resources are deployed | `string` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | Tags that the AWS Provider adds to every resource, in addition to Environment | `map(string)` | `{}` | no |
 
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_hello_world"></a> [hello\_world](#output\_hello\_world) | Test output |
 | <a name="output_random_pet"></a> [random\_pet](#output\_random\_pet) | Dummy output |
 <!-- END_TF_DOCS -->
@@ -287,43 +193,3 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
-
-<!-- BEGIN_TF_DOCS -->
-## Requirements
-
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >=5.0.0 |
-| <a name="requirement_random"></a> [random](#requirement\_random) | >=3.0.0 |
-
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_random"></a> [random](#provider\_random) | >=3.0.0 |
-
-## Modules
-
-No modules.
-
-## Resources
-
-| Name | Type |
-|------|------|
-| [random_pet.main](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/pet) | resource |
-
-## Inputs
-
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_environment"></a> [environment](#input\_environment) | The environment where to deploy the solution | `string` | n/a | yes |
-| <a name="input_region"></a> [region](#input\_region) | Region where to deploy the resources | `string` | n/a | yes |
-
-## Outputs
-
-| Name | Description |
-|------|-------------|
-| <a name="output_hello_world"></a> [hello\_world](#output\_hello\_world) | Test output used by Terrastest |
-| <a name="output_random_pet"></a> [random\_pet](#output\_random\_pet) | Dummy output |
-<!-- END_TF_DOCS -->

@@ -1,9 +1,6 @@
 name: Terraform test PR
 
-permissions:
-  id-token: write # This is required for requesting the JWT
-  contents: read # This is required for actions/checkout
-  deployments: write # This is required to deactivate deployments
+permissions: {}
 
 on:
   workflow_dispatch:
@@ -13,42 +10,26 @@ on:
       - synchronize
       - ready_for_review
 
-concurrency:
-  group: terraform-test
-  cancel-in-progress: false
-
+# Runs the unit tests in tests/. They mock the AWS Provider, so this job needs no
+# AWS credentials and no backend.
 jobs:
-  test-deploy:
-    name: Test Deployment
+  test:
+    name: Terraform test
     runs-on: ubuntu-latest
     if: ${{ ! github.event.pull_request.draft }}
-    defaults:
-      run:
-        shell: bash
-    environment:
-      name: PR-${{ github.event.number }}
+    permissions:
+      contents: read # Required for actions/checkout
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          role-to-assume: ${{ secrets.TF_PLAN_ROLE_ARN }}
-          role-session-name: terraform-test-role
-          aws-region: us-east-1
+          persist-credentials: false
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-      - name: Terraform Init
-        run: terraform init
-      - name: Terraform test
-        run: terraform test
-  deactivate-deployment:
-    needs: [test-deploy]
-    name: Deactivate deployment
-    runs-on: ubuntu-latest
-    steps:
-      - uses: strumwolf/delete-deployment-environment@v3
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          environment: pr-${{ github.event.number }}
-          onlyDeactivateDeployments: true
+          terraform_version: ${{ vars.TF_VERSION }}
+          terraform_wrapper: false
+      - name: Terraform Init
+        run: terraform init -backend=false -lockfile=readonly -input=false
+      - name: Terraform Test
+        run: terraform test
