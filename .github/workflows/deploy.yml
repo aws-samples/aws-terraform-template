@@ -23,7 +23,8 @@ on:
 
 # Pull requests plan dev and comment the plan. On main, each environment plans,
 # waits for its GitHub environment's approval, applies that reviewed plan, and
-# then the next environment starts.
+# then the next environment starts. An environment without required reviewers
+# applies right after its plan.
 jobs:
   deploy-dev:
     name: Dev

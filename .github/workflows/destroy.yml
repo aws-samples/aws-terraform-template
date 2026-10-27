@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 # Destroys in the reverse order of deployment. Each destroy plan waits for the
-# GitHub environment's approval before it's applied.
+# GitHub environment's approval before it's applied, if the environment has
+# required reviewers.
 jobs:
   destroy-prod:
     name: Prod

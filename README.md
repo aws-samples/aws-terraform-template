@@ -13,7 +13,7 @@ The template includes:
 - Version constraints with an upper bound for the AWS Provider, and a committed dependency lock file with checksums for Linux, macOS, and Windows.
 - `allowed_account_ids` on the AWS Provider, so that a run with credentials for the wrong account stops before it changes anything.
 - Unit tests that mock the AWS Provider and need no AWS credentials.
-- Deploy and destroy workflows that plan in each environment, wait for the environment's approval, and apply the reviewed plan.
+- Deploy and destroy workflows that plan in each environment, wait for the environment's approval where GitHub supports required reviewers, and apply the reviewed plan.
 - TFLint, Checkov, terraform-docs, and pre-commit hooks.
 
 ## Repository configuration checklist
@@ -24,8 +24,8 @@ The template includes:
 - [ ] Update [CODEOWNERS](./CODEOWNERS) with the users or teams that review pull requests.
 - [ ] Install the [pre-commit hooks](./CONTRIBUTING.md#install-pre-commit-hooks).
 - [ ] Replace the description at the top of this README with what your module deploys.
-- [ ] In each AWS account, create the state bucket, its AWS KMS key, the GitHub OIDC identity provider, and the plan and apply IAM roles. See [Option 1: S3 backend with GitHub OIDC](https://github.com/aws-samples/aws-terraform-reusable-workflow#option-1-s3-backend-with-github-oidc) in the reusable workflow README.
-- [ ] Create a GitHub environment for each environment (`dev`, `test`, `prod`). For `prod`, add required reviewers and a deployment branch rule that allows only `main`.
+- [ ] In each AWS account, create the state bucket, its AWS KMS key, the GitHub OIDC identity provider, and the plan and apply IAM roles. See [Option 1: S3 backend with GitHub OIDC](https://github.com/aws-samples/aws-terraform-reusable-workflow#option-1-s3-backend-with-github-oidc) in the reusable workflow README. A repository created from this template after July 15, 2026 uses GitHub's [immutable OIDC subject format](https://docs.github.com/en/actions/reference/security/oidc#immutable-subject-claims), `repo:OWNER@OWNER-ID/REPO@REPO-ID`, so write the trust policies with that prefix. Get it with `gh api repos/OWNER/REPO/actions/oidc/customization/sub --jq .sub_claim_prefix`.
+- [ ] Create a GitHub environment for each environment (`dev`, `test`, `prod`). For `prod`, add required reviewers and a deployment branch rule that allows only `main`. Required reviewers need a public repository, or GitHub Enterprise Cloud for a private or internal one. Without them, each environment applies right after its plan. See [Requirements](https://github.com/aws-samples/aws-terraform-reusable-workflow#requirements) in the reusable workflow README.
 - [ ] Create the repository variable `TF_VERSION` (for example, `1.17.0`) and the repository secrets `<ENV>_AWS_PLAN_ROLE_ARN`, `<ENV>_AWS_APPLY_ROLE_ARN`, and `PLAN_ENCRYPTION_KEY`.
 - [ ] In a private or internal repository with [GitHub Code Security](https://docs.github.com/en/code-security/concepts/code-scanning/code-scanning) enabled, create the repository variable `CODE_SCANNING_ENABLED` with the value `true`, so that the Checkov workflow uploads its results to code scanning. Public repositories upload them without this variable. In other repositories, the results are only in the workflow log.
 - [ ] In each `envs/<environment>/` folder, set your account ID in `terraform.tfvars` and your state bucket in `backend.tfbackend`.
@@ -93,8 +93,8 @@ For execution modes, dynamic provider credentials, and Terraform Enterprise, see
 
 ## Deploy and destroy
 
-- **Deploy:** pull requests plan `dev` and post the plan as a comment. On `main`, each environment plans, waits for its GitHub environment's approval, and applies that saved plan. Then the next environment starts.
-- **Destroy:** run it manually. It destroys `prod`, then `test`, then `dev`, and each destroy plan waits for its environment's approval.
+- **Deploy:** pull requests plan `dev` and post the plan as a comment. On `main`, each environment plans, waits for its GitHub environment's approval, and applies that saved plan. Then the next environment starts. An environment without required reviewers applies right after its plan.
+- **Destroy:** run it manually. It destroys `prod`, then `test`, then `dev`, and each destroy plan waits for its environment's approval. Each destroy also appears in the environment's deployment history as a deployment that is now inactive. See [Destroy workflow](https://github.com/aws-samples/aws-terraform-reusable-workflow#destroy-workflow) in the reusable workflow README.
 
 Each environment reads `envs/<environment>/terraform.tfvars`. The workflow also passes `region` and `environment` from its inputs. For sensitive values, use the reusable workflow's `secret-tfvars` secret with ephemeral variables. See [Sensitive variables](https://github.com/aws-samples/aws-terraform-reusable-workflow#sensitive-variables).
 
