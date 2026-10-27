@@ -1,5 +1,5 @@
 block-list-secret-scan: []
-branch: master
+branch: main
 directory:
 - .
 download-external-modules: false

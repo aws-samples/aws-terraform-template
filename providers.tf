@@ -1,28 +1,24 @@
 provider "aws" {
   region = var.region
 
+  # Stops the run before any change if the credentials belong to another account.
+  allowed_account_ids = var.allowed_account_ids
+
   default_tags {
     tags = local.tags
   }
 }
 
-# Terraform backend configuration
-# Option 1: S3 backend (default)
+# Partial S3 backend. Each environment completes it with
+# envs/<environment>/backend.tfbackend, which the reusable workflow passes to
+# terraform init. For local runs:
+#   terraform init -backend-config=envs/dev/backend.tfbackend
+#
+# To use HCP Terraform or Terraform Enterprise instead, replace this block
+# with `cloud {}` and delete the backend.tfbackend files.
 terraform {
   backend "s3" {
-    bucket       = "my-terraform-state-bucket"
-    key          = "path/to/my/terraform.tfstate"
-    region       = "us-east-1"
     encrypt      = true
     use_lockfile = true
   }
 }
-
-# Option 2: Terraform Cloud/Enterprise (alternative)
-# Delete the backend "s3" block above and uncomment the cloud block below
-# to use Terraform Cloud/Enterprise
-# terraform {
-#   cloud {}
-# }
-
-# Note: You can only have one backend configuration active at a time.

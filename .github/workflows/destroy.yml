@@ -1,38 +1,72 @@
 name: Destroy
 
-permissions:
-  id-token: write # This is required for requesting the JWT
-  contents: read # This is required for actions/checkout
-  pull-requests: write # This is required to add comments to Pull Requests
-  deployments: write # This is required to deactivate deployments
+permissions: {}
 
 on:
   workflow_dispatch:
 
+# Destroys in the reverse order of deployment. Each destroy plan waits for the
+# GitHub environment's approval before it's applied, if the environment has
+# required reviewers.
 jobs:
-  destroy:
-    name: Progressive Destroy
-    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@v1.3.0
-    strategy:
-      max-parallel: 1
-      fail-fast: true
-      matrix:
-        include:
-          - environment: dev
-            region: us-east-1
-          - environment: test
-            region: us-west-2
-          - environment: prod
-            region: us-east-2
+  destroy-prod:
+    name: Prod
+    # The reusable workflow's jobs request these permissions, so the calling
+    # job must grant all of them.
+    permissions:
+      contents: read # Required for actions/checkout
+      id-token: write # Required to request the GitHub OIDC token
+      pull-requests: write # Required to comment the plan on pull requests
+      deployments: write # Required to mark deployments inactive after a destroy
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@96c0109570cc967e77f34c7d1c6669f29fdd94f9 # v2.0.0
     with:
       deploy: false
       tf-version: ${{ vars.TF_VERSION }}
-      aws-region: ${{ matrix.region }}
-      environment: ${{ matrix.environment }}
-      ref: v1.3.0
-      local-execution-mode: true
-      enable-github-modules: true
+      aws-region: us-east-2
+      environment: prod
     secrets:
-      terraform-execution-iam-plan-role-arn: ${{ secrets.TF_PLAN_ROLE_ARN }}
-      terraform-execution-iam-apply-role-arn: ${{ secrets.TF_APPLY_ROLE_ARN }}
-      github-token: ${{ secrets.GITHUB_TOKEN }}
+      terraform-execution-iam-plan-role-arn: ${{ secrets.PROD_AWS_PLAN_ROLE_ARN }}
+      terraform-execution-iam-apply-role-arn: ${{ secrets.PROD_AWS_APPLY_ROLE_ARN }}
+      plan-encryption-key: ${{ secrets.PLAN_ENCRYPTION_KEY }}
+
+  destroy-test:
+    name: Test
+    # The reusable workflow's jobs request these permissions, so the calling
+    # job must grant all of them.
+    permissions:
+      contents: read # Required for actions/checkout
+      id-token: write # Required to request the GitHub OIDC token
+      pull-requests: write # Required to comment the plan on pull requests
+      deployments: write # Required to mark deployments inactive after a destroy
+    needs: destroy-prod
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@96c0109570cc967e77f34c7d1c6669f29fdd94f9 # v2.0.0
+    with:
+      deploy: false
+      tf-version: ${{ vars.TF_VERSION }}
+      aws-region: us-west-2
+      environment: test
+    secrets:
+      terraform-execution-iam-plan-role-arn: ${{ secrets.TEST_AWS_PLAN_ROLE_ARN }}
+      terraform-execution-iam-apply-role-arn: ${{ secrets.TEST_AWS_APPLY_ROLE_ARN }}
+      plan-encryption-key: ${{ secrets.PLAN_ENCRYPTION_KEY }}
+
+  destroy-dev:
+    name: Dev
+    # The reusable workflow's jobs request these permissions, so the calling
+    # job must grant all of them.
+    permissions:
+      contents: read # Required for actions/checkout
+      id-token: write # Required to request the GitHub OIDC token
+      pull-requests: write # Required to comment the plan on pull requests
+      deployments: write # Required to mark deployments inactive after a destroy
+    needs: destroy-test
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@96c0109570cc967e77f34c7d1c6669f29fdd94f9 # v2.0.0
+    with:
+      deploy: false
+      tf-version: ${{ vars.TF_VERSION }}
+      aws-region: us-east-1
+      environment: dev
+    secrets:
+      terraform-execution-iam-plan-role-arn: ${{ secrets.DEV_AWS_PLAN_ROLE_ARN }}
+      terraform-execution-iam-apply-role-arn: ${{ secrets.DEV_AWS_APPLY_ROLE_ARN }}
+      plan-encryption-key: ${{ secrets.PLAN_ENCRYPTION_KEY }}

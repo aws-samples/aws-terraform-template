@@ -1,7 +1,6 @@
 name: TFLint
 
-permissions:
-  contents: read # This is required for actions/checkout
+permissions: {}
 
 on:
   workflow_dispatch:
@@ -11,14 +10,21 @@ jobs:
   lint:
     name: TFLint Inspection
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # Required for actions/checkout
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v6
-      - name: Show version
-        run: tflint --version
+        uses: terraform-linters/setup-tflint@6ffdbaa3be476b3431f7275c26966ef32ff60337 # v6.3.2
+        with:
+          tflint_version: v0.64.0
       - name: Init TFLint
+        env:
+          # Avoids GitHub API rate limits when downloading the AWS ruleset
+          GITHUB_TOKEN: ${{ github.token }}
         run: tflint --init
       - name: Run TFLint
-        run: tflint
+        run: tflint --recursive --format compact
