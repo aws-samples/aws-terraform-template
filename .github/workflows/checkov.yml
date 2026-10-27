@@ -24,9 +24,15 @@ jobs:
         with:
           config_file: .checkov.yaml
       # Upload the results whether or not checks failed. Failed checks fail the
-      # previous step, and GitHub skips later steps by default.
+      # previous step, and GitHub skips later steps by default. Code scanning is
+      # available in public repositories, and in private or internal
+      # repositories only with GitHub Code Security enabled, so those opt in
+      # with the CODE_SCANNING_ENABLED variable. Without the upload, the results
+      # are in the Run Checkov step's log.
       - name: Upload SARIF file
-        if: success() || failure()
+        if: >-
+          (success() || failure()) &&
+          (github.event.repository.visibility == 'public' || vars.CODE_SCANNING_ENABLED == 'true')
         uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           sarif_file: results.sarif
