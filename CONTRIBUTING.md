@@ -15,6 +15,7 @@ information to effectively respond to your bug report or contribution.
   - [Local Development Setup](#local-development-setup)
     - [Install Visual Studio Code recommended extensions](#install-visual-studio-code-recommended-extensions)
     - [Install Terraform](#install-terraform)
+    - [Install terraform-docs](#install-terraform-docs)
     - [Install pre-commit hooks](#install-pre-commit-hooks)
     - [Execute pre-commit hooks manually on all files](#execute-pre-commit-hooks-manually-on-all-files)
     - [Update pre-commit hooks](#update-pre-commit-hooks)
@@ -39,7 +40,7 @@ The following tools need to be installed on your local machine:
 - [pre-commit](https://pre-commit.com/)
 - [Terraform](https://developer.hashicorp.com/terraform/install) 1.11 or later. A version manager such as [tfenv](https://github.com/tfutils/tfenv) or [mise](https://mise.jdx.dev/) helps you match the `TF_VERSION` that the workflows use.
 - [tflint](https://github.com/terraform-linters/tflint)
-- [terraform-docs](https://github.com/terraform-docs/terraform-docs)
+- [terraform-docs](https://github.com/terraform-docs/terraform-docs) 0.20.0, the version that the terraform-docs workflow runs. Other versions format the README tables differently, and the workflow fails on the difference. See [Install terraform-docs](#install-terraform-docs).
 - [checkov](https://github.com/bridgecrewio/checkov)
 
 ### Recommended
@@ -64,6 +65,17 @@ Install the version set in the repository's `TF_VERSION` variable. For example, 
 tfenv install 1.17.0
 tfenv use 1.17.0
 ```
+
+### Install terraform-docs
+
+Install terraform-docs 0.20.0, the version in the terraform-docs workflow's action. The pre-commit hook runs the terraform-docs on your `PATH`. For example, with mise:
+
+```shell
+mise use --global terraform-docs@0.20.0
+terraform-docs --version
+```
+
+Or download it from the [v0.20.0 release](https://github.com/terraform-docs/terraform-docs/releases/tag/v0.20.0) and check it against the release's `terraform-docs-v0.20.0.sha256sum` file. When the workflow's action moves to a newer terraform-docs, regenerate the README with that version in the same pull request.
 
 ### Install pre-commit hooks
 

@@ -37,6 +37,10 @@ repos:
       - id: terraform_validate
         args:
           - --hook-config=--retry-once-with-cleanup=true
+      # Runs the installed terraform-docs. Use the version that the
+      # terraform-docs workflow runs (terraform-docs/gh-actions v1.4.1 runs
+      # 0.20.0). Other versions format the README tables differently, and the
+      # workflow fails on any difference.
       - id: terraform_docs
         args:
           - --args=--config=.terraform-docs.yaml

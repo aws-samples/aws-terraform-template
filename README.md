@@ -149,7 +149,7 @@ To download modules from private GitHub repositories in the workflows, set `enab
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.11 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.7 |
@@ -157,7 +157,7 @@ To download modules from private GitHub repositories in the workflows, set `enab
 ## Providers
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.7 |
 
 ## Modules
@@ -167,13 +167,13 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [random_pet.main](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/pet) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | <a name="input_allowed_account_ids"></a> [allowed\_account\_ids](#input\_allowed\_account\_ids) | AWS account IDs that this configuration can deploy to. The AWS Provider stops the run if the credentials belong to any other account. | `list(string)` | n/a | yes |
 | <a name="input_environment"></a> [environment](#input\_environment) | Name of the environment where the resources are deployed, such as dev or prod | `string` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | AWS Region where the resources are deployed | `string` | n/a | yes |
@@ -182,7 +182,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | <a name="output_hello_world"></a> [hello\_world](#output\_hello\_world) | Test output |
 | <a name="output_random_pet"></a> [random\_pet](#output\_random\_pet) | Dummy output |
 <!-- END_TF_DOCS -->
