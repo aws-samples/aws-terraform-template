@@ -18,7 +18,7 @@ jobs:
       id-token: write # Required to request the GitHub OIDC token
       pull-requests: write # Required to comment the plan on pull requests
       deployments: write # Required to mark deployments inactive after a destroy
-    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@185fe37eb3dc1fb4bcfa6b67dffcbb3eea483a61 # feature/v2-saved-plan-s3-backend, replace with the v2.0.0 release
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@96c0109570cc967e77f34c7d1c6669f29fdd94f9 # v2.0.0
     with:
       deploy: false
       tf-version: ${{ vars.TF_VERSION }}
@@ -39,7 +39,7 @@ jobs:
       pull-requests: write # Required to comment the plan on pull requests
       deployments: write # Required to mark deployments inactive after a destroy
     needs: destroy-prod
-    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@185fe37eb3dc1fb4bcfa6b67dffcbb3eea483a61 # feature/v2-saved-plan-s3-backend, replace with the v2.0.0 release
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@96c0109570cc967e77f34c7d1c6669f29fdd94f9 # v2.0.0
     with:
       deploy: false
       tf-version: ${{ vars.TF_VERSION }}
@@ -60,7 +60,7 @@ jobs:
       pull-requests: write # Required to comment the plan on pull requests
       deployments: write # Required to mark deployments inactive after a destroy
     needs: destroy-test
-    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@185fe37eb3dc1fb4bcfa6b67dffcbb3eea483a61 # feature/v2-saved-plan-s3-backend, replace with the v2.0.0 release
+    uses: aws-samples/aws-terraform-reusable-workflow/.github/workflows/terraform-reusable.yml@96c0109570cc967e77f34c7d1c6669f29fdd94f9 # v2.0.0
     with:
       deploy: false
       tf-version: ${{ vars.TF_VERSION }}
