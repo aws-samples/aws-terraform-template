@@ -24,14 +24,14 @@ repos:
     hooks:
       - id: gitleaks
   - repo: https://github.com/bridgecrewio/checkov.git
-    rev: 3.3.30
+    rev: 3.4.0
     hooks:
       - id: checkov
         args:
           - --config-file
           - .checkov.yaml
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.109.3
+    rev: v1.109.4
     hooks:
       - id: terraform_fmt
       - id: terraform_validate
