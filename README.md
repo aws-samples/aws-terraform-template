@@ -16,6 +16,9 @@ The template includes:
 - Deploy and destroy workflows that plan in each environment, wait for the environment's approval where GitHub supports required reviewers, and apply the reviewed plan.
 - TFLint, Checkov, terraform-docs, and pre-commit hooks.
 
+> [!IMPORTANT]
+> This is sample code, for non-production usage. You should work with your security and legal teams to meet your organizational security, regulatory, and compliance requirements before deployment.
+
 ## Repository configuration checklist
 
 > Do the steps marked **(Reusable module)** only when you use this template for a reusable module instead of a root module.
