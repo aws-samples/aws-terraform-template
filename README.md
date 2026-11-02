@@ -12,7 +12,7 @@ The template includes:
 - An S3 backend with native state locking, completed for each environment by `envs/<environment>/backend.tfbackend`.
 - Version constraints with an upper bound for the AWS Provider, and a committed dependency lock file with checksums for Linux, macOS, and Windows.
 - `allowed_account_ids` on the AWS Provider, so that a run with credentials for the wrong account stops before it changes anything.
-- Unit tests that mock the AWS Provider and need no AWS credentials.
+- Unit tests that mock the AWS Provider and need no AWS credentials, and an integration test that runs against a dedicated test account.
 - Deploy and destroy workflows that plan in each environment, wait for the environment's approval where GitHub supports required reviewers, and apply the reviewed plan.
 - TFLint, Checkov, terraform-docs, and pre-commit hooks.
 
@@ -132,11 +132,23 @@ terraform init -backend=false
 terraform test
 ```
 
-Integration tests create real resources, check them, and destroy them. Put them in `tests/integration`, configure the provider in them with `allowed_account_ids` set to a dedicated test account, and run them with credentials for that account:
+Integration tests apply the configuration with real credentials, check the results, and destroy what they created. `tests/integration/integration.tftest.hcl` uses the real AWS Provider with credentials for a dedicated test account, not one of the accounts in `envs`. Its provider block replaces the one in `providers.tf` and sets `allowed_account_ids` to the test account, so a run with credentials for any other account stops before Terraform creates anything. The test has two runs:
+
+- `provider_context` applies the helper module in `tests/integration/provider_context`, which only reads data sources. It checks the account, Region, and default tags that the AWS Provider resolved.
+- `apply` applies the root module and checks its outputs. When you add resources, add assertions on them to this run.
+
+When the test finishes, `terraform test` destroys what it created, even if an assertion fails. The sample's only resource is `random_pet`, so the test creates nothing in the account, and a read-only role is enough to run it.
+
+The test needs Terraform 1.13 or later. Initialize with its test directory so that Terraform installs the helper module, and pass the test account's ID. `region` defaults to `us-east-1`:
 
 ```shell
-terraform test -test-directory=tests/integration
+terraform init -backend=false -test-directory=tests/integration
+terraform test -test-directory=tests/integration \
+  -var='allowed_account_ids=["111122223333"]' \
+  -var='region=us-east-1'
 ```
+
+The Terraform test PR workflow runs only the tests in `tests`, so it doesn't run the integration test and needs no AWS credentials.
 
 For more information, see [Best practices for testing](https://docs.aws.amazon.com/prescriptive-guidance/latest/terraform-aws-provider-best-practices/best-practices-for-testing.html) in the guide.
 
