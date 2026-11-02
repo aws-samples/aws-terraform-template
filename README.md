@@ -27,7 +27,7 @@ The template includes:
 - [ ] Update [CODEOWNERS](./CODEOWNERS) with the users or teams that review pull requests.
 - [ ] Install the [pre-commit hooks](./CONTRIBUTING.md#install-pre-commit-hooks).
 - [ ] Replace the description at the top of this README with what your module deploys.
-- [ ] In each AWS account, create the state bucket, its AWS KMS key, the GitHub OIDC identity provider, and the plan and apply IAM roles. See [Option 1: S3 backend with GitHub OIDC](https://github.com/aws-samples/aws-terraform-reusable-workflow#option-1-s3-backend-with-github-oidc) in the reusable workflow README. A repository created from this template after July 15, 2026 uses GitHub's [immutable OIDC subject format](https://docs.github.com/en/actions/reference/security/oidc#immutable-subject-claims), `repo:OWNER@OWNER-ID/REPO@REPO-ID`, so write the trust policies with that prefix. Get it with `gh api repos/OWNER/REPO/actions/oidc/customization/sub --jq .sub_claim_prefix`.
+- [ ] In each AWS account, create the state bucket, its AWS KMS key, the GitHub OIDC identity provider, and the plan and apply IAM roles. See [Option 1: S3 backend with GitHub OIDC](https://github.com/aws-samples/aws-terraform-reusable-workflow#option-1-s3-backend-with-github-oidc) in the reusable workflow README. A repository created from this template after July 15, 2026 uses GitHub's [immutable OIDC subject format](https://docs.github.com/en/actions/reference/security/oidc#immutable-subject-claims), `repo:OWNER@OWNER-ID/REPO@REPO-ID`, so write the trust policies with that prefix. Get it with `gh api repos/OWNER/REPO/actions/oidc/customization/sub --jq .sub_claim_prefix`. Configure the bucket and the roles as described in [Security considerations](#security-considerations).
 - [ ] Create a GitHub environment for each environment (`dev`, `test`, `prod`). For `prod`, add required reviewers and a deployment branch rule that allows only `main`. Required reviewers need a public repository, or GitHub Enterprise Cloud for a private or internal one. Without them, each environment applies right after its plan. See [Requirements](https://github.com/aws-samples/aws-terraform-reusable-workflow#requirements) in the reusable workflow README.
 - [ ] Create the repository variable `TF_VERSION` (for example, `1.17.0`) and the repository secrets `<ENV>_AWS_PLAN_ROLE_ARN`, `<ENV>_AWS_APPLY_ROLE_ARN`, and `PLAN_ENCRYPTION_KEY`.
 - [ ] In a private or internal repository with [GitHub Code Security](https://docs.github.com/en/code-security/concepts/code-scanning/code-scanning) enabled, create the repository variable `CODE_SCANNING_ENABLED` with the value `true`, so that the Checkov workflow uploads its results to code scanning. Public repositories upload them without this variable. In other repositories, the results are only in the workflow log.
@@ -100,6 +100,28 @@ For execution modes, dynamic provider credentials, and Terraform Enterprise, see
 - **Destroy:** run it manually. It destroys `prod`, then `test`, then `dev`, and each destroy plan waits for its environment's approval. Each destroy also appears in the environment's deployment history as a deployment that is now inactive. See [Destroy workflow](https://github.com/aws-samples/aws-terraform-reusable-workflow#destroy-workflow) in the reusable workflow README.
 
 Each environment reads `envs/<environment>/terraform.tfvars`. The workflow also passes `region` and `environment` from its inputs. For sensitive values, use the reusable workflow's `secret-tfvars` secret with ephemeral variables. See [Sensitive variables](https://github.com/aws-samples/aws-terraform-reusable-workflow#sensitive-variables).
+
+## Security considerations
+
+### State bucket
+
+Create each environment's state bucket with these controls. For details, see [Secure remote state storage](https://docs.aws.amazon.com/prescriptive-guidance/latest/terraform-aws-provider-best-practices/security.html#remote-state-storage) in the guide.
+
+- **Versioning:** turn on S3 Versioning, so that you can restore an earlier version of the state.
+- **Block Public Access:** keep all four S3 Block Public Access settings on, and keep Object Ownership set to Bucket owner enforced so that ACLs are disabled. New buckets have both by default.
+- **TLS only:** add a bucket policy statement that denies `s3:*` on the bucket and its objects to every principal when `aws:SecureTransport` is `false`.
+- **AWS KMS key:** encrypt the state with a customer managed key, the `kms_key_id` in `backend.tfbackend`. Write a key policy that lets only the plan and apply roles, and any role that people use for local runs, use the key, and only your key administrators manage it. The default key policy also lets IAM policies in the account grant use of the key.
+- **Role permissions:** give each role access only to its state key, the lock file, and the key. See [AWS IAM](https://github.com/aws-samples/aws-terraform-reusable-workflow#aws-iam) in the reusable workflow README.
+
+### Pull request plans
+
+On pull requests, the Deploy workflow plans `dev` with the dev plan role. The plan runs the pull request's Terraform code before anyone reviews it. Providers, modules, and data sources such as `external` can run commands with the plan role's credentials, which can read the dev state. By default, workflows for pull requests from forks don't receive secrets or an OIDC token, so this applies to anyone who can push a branch to this repository. For the full list of what that code can reach, see [Security considerations](https://github.com/aws-samples/aws-terraform-reusable-workflow#security-considerations) in the reusable workflow README. In this repository:
+
+- Trust the `pull_request` subject only in the dev plan role. The test and prod jobs plan only on `main`, so their plan roles need only `ref:refs/heads/main`.
+- Protect `main` with a [ruleset](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) or branch protection rule that requires an approving review from the code owners in [CODEOWNERS](./CODEOWNERS).
+- Give write access only to people you trust with the dev plan role and the repository's secrets.
+
+The Terraform test PR workflow runs the unit tests without AWS credentials or a backend.
 
 ## Tests
 
