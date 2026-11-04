@@ -4,7 +4,7 @@
 # 1.13 or later, for the variable blocks. Pass the test account's ID:
 #   terraform init -backend=false -test-directory=tests/integration
 #   terraform test -test-directory=tests/integration \
-#     -var='allowed_account_ids=["111122223333"]'
+#     -var='allowed_account_ids=["999988887777"]'
 
 variable "allowed_account_ids" {
   description = "ID of the dedicated test account. The AWS Provider stops the test if the credentials belong to any other account."

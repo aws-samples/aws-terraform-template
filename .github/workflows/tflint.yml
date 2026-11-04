@@ -26,5 +26,7 @@ jobs:
           # Avoids GitHub API rate limits when downloading the AWS ruleset
           GITHUB_TOKEN: ${{ github.token }}
         run: tflint --init
+      # --recursive looks for .tflint.hcl in each module directory, so pass
+      # the root config's absolute path to apply it to every module.
       - name: Run TFLint
-        run: tflint --recursive --format compact
+        run: tflint --recursive --format compact --config "$GITHUB_WORKSPACE/.tflint.hcl"
