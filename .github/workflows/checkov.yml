@@ -20,7 +20,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run Checkov
-        uses: bridgecrewio/checkov-action@c10e2438743528f9e4549758fad8b7a62052541d # v12.3136.0
+        uses: bridgecrewio/checkov-action@45edc9d8856b664db2ec251f5f8632361f0a67aa # v12.3139.0
         with:
           config_file: .checkov.yaml
       # Upload the results whether or not checks failed. Failed checks fail the
