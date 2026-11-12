@@ -7,6 +7,11 @@
 # Local .terraform directories
 **/.terraform/*
 
+# Lock file that the terraform_validate pre-commit hook creates when it
+# initializes the integration test helper module. Terraform reads the lock file
+# only from the root module, and the root module's lock file stays committed.
+tests/integration/provider_context/.terraform.lock.hcl
+
 # .tfstate files
 **/*.tfstate
 **/*.tfstate.*

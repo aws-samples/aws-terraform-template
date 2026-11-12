@@ -139,12 +139,12 @@ Integration tests apply the configuration with real credentials, check the resul
 
 When the test finishes, `terraform test` destroys what it created, even if an assertion fails. The sample's only resource is `random_pet`, so the test creates nothing in the account, and a read-only role is enough to run it.
 
-The test needs Terraform 1.13 or later. Initialize with its test directory so that Terraform installs the helper module, and pass the test account's ID. `region` defaults to `us-east-1`:
+The test needs Terraform 1.13 or later. Initialize with its test directory so that Terraform installs the helper module, and pass the ID of the test account, which must be a dedicated account and not one of the accounts in `envs`. `region` defaults to `us-east-1`:
 
 ```shell
 terraform init -backend=false -test-directory=tests/integration
 terraform test -test-directory=tests/integration \
-  -var='allowed_account_ids=["111122223333"]' \
+  -var='allowed_account_ids=["999988887777"]' \
   -var='region=us-east-1'
 ```
 

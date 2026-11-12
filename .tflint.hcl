@@ -2,11 +2,18 @@ config {
   format     = "compact"
   plugin_dir = "~/.tflint.d/plugins"
 
-  call_module_type    = "local"
-  force               = false
-  disabled_by_default = true
+  call_module_type = "local"
+  force            = false
 }
 
+# The rule blocks below enable more Terraform rules than the recommended preset.
+plugin "terraform" {
+  enabled = true
+  preset  = "recommended"
+}
+
+# Runs the ruleset's default rules. Deep checking stays off because it needs
+# AWS credentials.
 plugin "aws" {
   enabled = true
   version = "0.50.0"
